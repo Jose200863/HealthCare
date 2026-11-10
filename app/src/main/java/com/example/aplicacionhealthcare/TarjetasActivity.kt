@@ -1,20 +1,35 @@
 package com.example.aplicacionhealthcare
 
-import android.content.Intent
 import android.os.Bundle
-import android.text.Editable
-import android.text.TextWatcher
 import android.view.View
-import android.widget.*
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.view.isVisible
+import androidx.core.widget.doAfterTextChanged
 
+/** Médico disponible para agendar una cita. */
 data class Medico(
     val nombre: String,
     val especialidad: String,
     val horario: String
 )
 
+/**
+ * Pantalla "Buscar médicos".
+ *
+ * Muestra una tarjeta por cada médico disponible y permite filtrarlos por
+ * nombre y especialidad. Al tocar una tarjeta se abre el registro de la cita
+ * con el doctor y la especialidad ya seleccionados.
+ */
 class TarjetasActivity : AppCompatActivity() {
+
+    private val todas = "Todas"
 
     private val medicos = listOf(
         Medico("Dra. María Rodríguez", "Cardiología", "8:00 am - 12:00 pm"),
@@ -27,115 +42,101 @@ class TarjetasActivity : AppCompatActivity() {
         Medico("Dr. Daniel Rojas", "Medicina General", "9:00 am - 6:00 pm")
     )
 
-    private lateinit var buscar: EditText
-    private lateinit var categoria: Spinner
-    private lateinit var resultados: LinearLayout
-    private lateinit var mensaje: TextView
+    private lateinit var etBuscar: EditText
+    private lateinit var spCategoria: Spinner
+    private lateinit var contenedorTarjetas: LinearLayout
+    private lateinit var tvSinResultados: TextView
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        enableEdgeToEdge()
         setContentView(R.layout.activity_tarjetas)
 
-        buscar = findViewById(R.id.etBuscar)
-        categoria = findViewById(R.id.spCategoria)
-        resultados = findViewById(R.id.contenedorTarjetas)
-        mensaje = findViewById(R.id.tvSinResultados)
+        etBuscar = findViewById(R.id.etBuscar)
+        spCategoria = findViewById(R.id.spCategoria)
+        contenedorTarjetas = findViewById(R.id.contenedorTarjetas)
+        tvSinResultados = findViewById(R.id.tvSinResultados)
 
-        val categorias = listOf(
-            "Todas",
-            "Cardiología",
-            "Pediatría",
-            "Dermatología",
-            "Medicina General"
-        )
-
-        categoria.adapter = ArrayAdapter(
-            this,
-            android.R.layout.simple_spinner_dropdown_item,
-            categorias
-        )
-
-        categoria.onItemSelectedListener =
-            object : AdapterView.OnItemSelectedListener {
-                override fun onItemSelected(
-                    parent: AdapterView<*>?,
-                    view: View?,
-                    position: Int,
-                    id: Long
-                ) {
-                    filtrar()
-                }
-
-                override fun onNothingSelected(
-                    parent: AdapterView<*>?
-                ) = Unit
-            }
-
-        buscar.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(
-                s: CharSequence?, start: Int,
-                count: Int, after: Int
-            ) = Unit
-
-            override fun onTextChanged(
-                s: CharSequence?, start: Int,
-                before: Int, count: Int
-            ) {
-                filtrar()
-            }
-
-            override fun afterTextChanged(s: Editable?) = Unit
-        })
-
+        cargarCategorias()
+        configurarEventos()
         filtrar()
     }
 
+    /** Llena el selector con "Todas" y las especialidades disponibles. */
+    private fun cargarCategorias() {
+        val categorias = listOf(todas) +
+            medicos.map { it.especialidad }
+                .distinctBy { it.lowercase() }
+                .sorted()
+
+        val adaptador = ArrayAdapter(
+            this,
+            android.R.layout.simple_spinner_item,
+            categorias
+        )
+        adaptador.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spCategoria.adapter = adaptador
+    }
+
+    /** Vuelve a filtrar cuando cambia el texto o la especialidad. */
+    private fun configurarEventos() {
+        etBuscar.doAfterTextChanged { filtrar() }
+
+        spCategoria.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>?,
+                view: View?,
+                position: Int,
+                id: Long
+            ) = filtrar()
+
+            override fun onNothingSelected(parent: AdapterView<*>?) = Unit
+        }
+    }
+
+    /** Filtra los médicos y vuelve a dibujar las tarjetas. */
     private fun filtrar() {
-        val texto = buscar.text.toString().trim()
-        val seleccion = categoria.selectedItem?.toString() ?: "Todas"
+        val texto = etBuscar.text.toString().trim()
+        val seleccion = spCategoria.selectedItem?.toString() ?: todas
 
-        val filtrados = medicos.filter {
-            it.nombre.contains(texto, ignoreCase = true) &&
-                    (seleccion == "Todas" ||
-                            it.especialidad == seleccion)
+        val encontrados = medicos.filter { medico ->
+            val coincideNombre = texto.isEmpty() ||
+                medico.nombre.contains(texto, ignoreCase = true)
+            val coincideEspecialidad = seleccion == todas ||
+                medico.especialidad.equals(seleccion, ignoreCase = true)
+
+            coincideNombre && coincideEspecialidad
         }
 
-        resultados.removeAllViews()
-
-        mensaje.visibility =
-            if (filtrados.isEmpty()) View.VISIBLE else View.GONE
-
-        filtrados.forEach { medico ->
-            val tarjeta = TextView(this).apply {
-                text = "${medico.nombre}\n" +
-                        "${medico.especialidad}\n" +
-                        "Horario: ${medico.horario}"
-
-                textSize = 17f
-                setPadding(30, 30, 30, 30)
-                setBackgroundResource(
-                    R.drawable.bg_tarjeta_medico
-                )
-
-                val parametros = LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                )
-                parametros.bottomMargin = 16
-                layoutParams = parametros
-            }
-
-            tarjeta.setOnClickListener {
-                val intent = Intent(
-                    this,
-                    RegistroActivity::class.java
-                )
-                intent.putExtra("doctor", medico.nombre)
-                intent.putExtra("especialidad", medico.especialidad)
-                startActivity(intent)
-            }
-
-            resultados.addView(tarjeta)
+        contenedorTarjetas.removeAllViews()
+        tvSinResultados.isVisible = encontrados.isEmpty()
+        encontrados.forEach { medico ->
+            contenedorTarjetas.addView(crearTarjeta(medico))
         }
+    }
+
+    /** Crea la tarjeta que representa a un médico. */
+    private fun crearTarjeta(medico: Medico): TextView {
+        val margen = (16 * resources.displayMetrics.density).toInt()
+
+        val tarjeta = TextView(this).apply {
+            text = "${medico.nombre}\n${medico.especialidad}\nHorario: ${medico.horario}"
+            textSize = 17f
+            setPadding(margen, margen, margen, margen)
+            setBackgroundResource(R.drawable.bg_tarjeta_medico)
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            ).apply {
+                bottomMargin = margen
+            }
+            setOnClickListener {
+                startActivity(
+                    RegistroActivity.crearIntent(this@TarjetasActivity, medico)
+                )
+            }
+        }
+
+        return tarjeta
     }
 }

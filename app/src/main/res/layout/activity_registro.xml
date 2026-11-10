@@ -1,8 +1,8 @@
-
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:fitsSystemWindows="true">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -13,38 +13,39 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginBottom="20dp"
+            android:gravity="center"
             android:text="Registro de citas"
             android:textSize="24sp"
-            android:textStyle="bold"
-            android:layout_marginBottom="20dp"/>
+            android:textStyle="bold" />
 
         <EditText
             android:id="@+id/etDoctor"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Nombre del médico"
-            android:inputType="textPersonName"/>
+            android:inputType="textPersonName" />
 
         <EditText
             android:id="@+id/etEspecialidad"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Especialidad"
-            android:inputType="text"/>
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/etFecha"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Fecha de cita"
-            android:inputType="date"/>
+            android:inputType="date" />
 
         <EditText
             android:id="@+id/etHora"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:hint="Hora de cita"
-            android:inputType="text"/>
+            android:inputType="text" />
 
         <EditText
             android:id="@+id/etMotivo"
@@ -52,13 +53,15 @@
             android:layout_height="wrap_content"
             android:hint="Motivo de consulta"
             android:inputType="textMultiLine"
-            android:minLines="3"/>
+            android:minLines="3"
+            android:gravity="top" />
 
         <Button
             android:id="@+id/btnGuardar"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="REGISTRAR CITA"/>
+            android:layout_marginTop="16dp"
+            android:text="REGISTRAR CITA" />
 
     </LinearLayout>
 </ScrollView>
