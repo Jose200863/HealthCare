@@ -20,6 +20,7 @@ class MainActivity : AppCompatActivity() {
         val etMotivo = findViewById<EditText>(R.id.etMotivo)
         val btnGuardar = findViewById<Button>(R.id.btnGuardar)
         val btnBuscarMedicos = findViewById<Button>(R.id.btnBuscarMedicos)
+        val btnVerCitas = findViewById<Button>(R.id.btnVerCitas)
 
         btnGuardar.setOnClickListener {
             val doctor = etDoctor.text.toString().trim()
@@ -45,6 +46,11 @@ class MainActivity : AppCompatActivity() {
 
         btnBuscarMedicos.setOnClickListener {
             val intent = Intent(this, TarjetasActivity::class.java)
+            startActivity(intent)
+        }
+
+        btnVerCitas.setOnClickListener {
+            val intent = Intent(this, CitasActivity::class.java)
             startActivity(intent)
         }
     }

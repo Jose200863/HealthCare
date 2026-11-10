@@ -17,7 +17,11 @@ data class Cita(
 class RegistroActivity : AppCompatActivity() {
 
     companion object {
-        val citasRegistradas = mutableListOf<Cita>()
+        val citasRegistradas = mutableListOf(
+            Cita("Dra. María Rodríguez", "Cardiología", "12/11/2026", "09:00 am", "Control de presión"),
+            Cita("Dr. Carlos Méndez", "Pediatría", "13/11/2026", "10:30 am", "Control de crecimiento"),
+            Cita("Dra. Ana López", "Dermatología", "14/11/2026", "02:00 pm", "Revisión de lunares")
+        )
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
